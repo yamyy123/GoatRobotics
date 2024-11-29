@@ -10,13 +10,12 @@ import (
 
 func RegisterRoutes(router *gin.Engine, chatRoom *service.ChatRoom) {
 	corsConfig := cors.Config{
-		AllowOrigins:     []string{"*"}, // Allows all origins, you can specify a list of allowed origins
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
 		AllowCredentials: true,
 	}
 
-	// Apply the CORS middleware
 	router.Use(cors.New(corsConfig))
 	router.GET("/join", ValidateIDMiddleware(), chatRoom.JoinClient)
 	router.GET("/leave", ValidateIDMiddleware(), chatRoom.LeaveClient)
