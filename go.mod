@@ -1,6 +1,8 @@
 module goatrobotics
 
-go 1.22.6
+go 1.21.0
+
+toolchain go1.22.6
 
 require (
 	github.com/gin-contrib/cors v1.7.2

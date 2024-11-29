@@ -21,6 +21,7 @@ func RegisterRoutes(router *gin.Engine, chatRoom *service.ChatRoom) {
 	router.GET("/leave", ValidateIDMiddleware(), chatRoom.LeaveClient)
 	router.GET("/send", ValidateIDMiddleware(), chatRoom.SendMessage)
 	router.GET("/messages", ValidateIDMiddleware(), chatRoom.GetMessages)
+	router.GET("/ping",service.Ping)
 }
 
 func ValidateIDMiddleware() gin.HandlerFunc {
