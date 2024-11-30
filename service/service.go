@@ -37,15 +37,15 @@ func (m *ChatRoom) Execute() {
 		select {
 		case id := <-m.Join:
 			m.Clients.Store(id, struct{}{})
-			log.Printf("%s joined the ChatRoom\n", id)
+			log.Printf("[Info]:%s joined the ChatRoom\n", id)
 		case id := <-m.Leave:
 			m.Clients.LoadAndDelete(id)
-			log.Printf("%s Left the ChatRoom\n", id)
+			log.Printf("[Info]:%s Left the ChatRoom\n", id)
 		case message := <-m.Broadcast:
 			m.Rwmutex.Lock()
 			m.Messages = append(m.Messages, message)
 			m.Rwmutex.Unlock()
-			log.Printf("Broadcasting Message In the room : %v", message)
+			log.Printf("[Info]:Broadcasting Message In the room : %v", message)
 		}
 	}
 }
@@ -53,12 +53,12 @@ func (m *ChatRoom) Execute() {
 func (m *ChatRoom) JoinClient(ctx *gin.Context) {
 	id := strings.TrimSpace(ctx.Query("id"))
 	if id == "" {
-		log.Println("Client Id is required")
+		log.Println("[Error]:Client Id is required")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error":gError.CLIENT_ID_REQUIRED})
 		return
 	}
 	if _, exists := m.Clients.Load(id); exists {
-		log.Println("Client Id is already in Use")
+		log.Println("[Error]:Client Id is already in Use")
 		ctx.JSON(http.StatusConflict, gin.H{"error":gError.DUPLICATE_CLIENT_ID})
 		return
 	}
@@ -69,12 +69,12 @@ func (m *ChatRoom) JoinClient(ctx *gin.Context) {
 func (m *ChatRoom) LeaveClient(ctx *gin.Context) {
 	id := strings.TrimSpace(ctx.Query("id"))
 	if id == "" {
-		log.Println("Client Id is required")
+		log.Println("[Error]:Client Id is required")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error":gError.CLIENT_ID_REQUIRED})
 		return
 	}
 	if _, exists := m.Clients.Load(id); !exists {
-		log.Println("Client Id is Not Present In the Room")
+		log.Println("[Error]:Client Id is Not Present In the Room")
 		ctx.JSON(http.StatusConflict, gin.H{"error":gError.CLIENT_ID_NOT_FOUND})
 		return
 	}
@@ -86,18 +86,18 @@ func (m *ChatRoom) LeaveClient(ctx *gin.Context) {
 func (m *ChatRoom) SendMessage(ctx *gin.Context) {
 	id := strings.TrimSpace(ctx.Query("id"))
 	if id == "" {
-		log.Println("Client Id is required")
+		log.Println("[Error]:Client Id is required")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error":gError.CLIENT_ID_REQUIRED})
 		return
 	}
 	if _, exists := m.Clients.Load(id); !exists {
-		log.Println("Client Id is Not Present In the Room")
+		log.Println("[Error]:Client Id is Not Present In the Room")
 		ctx.JSON(http.StatusConflict, gin.H{"error":gError.CLIENT_ID_NOT_FOUND})
 		return
 	}
 	messageText := strings.TrimSpace(ctx.Query("message"))
 	if messageText == "" {
-		log.Println("Message is Empty")
+		log.Println("[Error]:Message is Empty")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error":gError.MESSAGE_IS_EMPTY})
 		return
 
@@ -110,12 +110,12 @@ func (m *ChatRoom) SendMessage(ctx *gin.Context) {
 func (m *ChatRoom) GetMessages(ctx *gin.Context) {
 	id := strings.TrimSpace(ctx.Query("id"))
 	if id == "" {
-		log.Println("Client Id is required")
+		log.Println("[Error]:Client Id is required")
 		ctx.JSON(http.StatusBadRequest, gin.H{"error":gError.CLIENT_ID_REQUIRED})
 		return
 	}
 	if _, exists := m.Clients.Load(id); !exists {
-		log.Println("Client Id is Not Present In the Room")
+		log.Println("[Error]:Client Id is Not Present In the Room")
 		ctx.JSON(http.StatusConflict, gin.H{"error":gError.CLIENT_ID_NOT_FOUND})
 		return
 	}
@@ -140,21 +140,21 @@ func (m *ChatRoom) GetMessages(ctx *gin.Context) {
 			response.MessageIndicator = "No new messages"
 		}
 
-		log.Printf("Info: Sending messages for client ID: %s\n", id) 
+		log.Printf("[Info]: Sending messages for client ID: %s\n", id) 
 		ctx.JSON(http.StatusOK, response)                         
 
 	case <-requestCtx.Done():
 		
-		log.Printf("Error: Timeout retrieving messages for client ID: %s", id) 
+		log.Printf("[Error]: Timeout retrieving messages for client ID: %s", id) 
 		ctx.JSON(http.StatusGatewayTimeout, gin.H{
-			"error": "Request timed out while retrieving messages",
+			"error": gError.REQUEST_TIMED_OUT,
 		})
 	}
 }
 
 
 func Ping(ctx *gin.Context) {
-	log.Println("[INFO] Received ping request")
+	log.Println("[INFO]: Received ping request")
 	response := &models.PingResponse{Message: "Pinged Successfully"}
-	ctx.JSON(200, response)
+	ctx.JSON(http.StatusOK, response)
 }

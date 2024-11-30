@@ -22,7 +22,7 @@ type SendMessageResponse struct {
 
 type GetMessagesResponse struct {
 	Id               string     `json:"id"`
-	Messages         []*Message `json:"message"`
+	Messages         []*Message `json:"messages"`
 	MessageIndicator string     `json:"messageindicator,omitempty"`
 }
 

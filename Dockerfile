@@ -1,38 +1,50 @@
-# Use the official Golang image as the base image (Go 1.21)
+
 FROM golang:1.21-alpine as builder
 
-# Set the Current Working Directory inside the container
+
+ENV GO111MODULE=on \
+    CGO_ENABLED=0 \
+    GOOS=linux \
+    GOARCH=amd64
+
+
 WORKDIR /app
 
-# Copy the go mod and sum files
-COPY go.mod go.sum ./
 
-# Download all the dependencies. Dependencies will be cached if the go.mod and go.sum files are not changed
+COPY go.mod go.sum ./
 RUN go mod download
 
-# Copy the source code into the container
+
 COPY . .
 
-# Build the Go app
+
 RUN go build -o myapp .
 
-# Start a new stage from a smaller base image (to minimize the size of the final image)
-FROM alpine:latest  
 
-# Install the required CA certificates (needed to handle SSL/TLS)
+FROM alpine:3.18
+
+
 RUN apk --no-cache add ca-certificates
 
-# Set the Current Working Directory inside the container
 WORKDIR /root/
 
-# Copy the pre-built binary from the builder image
+
+RUN mkdir -p /root/audits
+
+
+RUN chmod -R 755 /root/audits
+
+
 COPY --from=builder /app/myapp .
 
-# Copy the config.json file into the container
+
 COPY config.json ./config.json
 
-# Expose the port the app runs on (default Go port is 8080)
+
+COPY --from=builder /app/UI /root/UI
+
+
 EXPOSE 8080
 
-# Command to run the executable
+
 CMD ["./myapp"]

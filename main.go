@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 
+	"goatrobotics/constants"
 	"goatrobotics/routes"
 	"goatrobotics/service"
 	"goatrobotics/utils"
@@ -20,8 +21,8 @@ func main() {
 
 	port := viper.GetString("port")
 	if port == "" {
-		fmt.Println("Port not specified in the configuration, defaulting to 8080")
-		port = "8080"
+		fmt.Println("Port not specified in the configuration, defaulting to port in constants")
+		port = constants.Port
 	}
 
 	router := gin.Default()
